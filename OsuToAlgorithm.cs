@@ -12,10 +12,10 @@ namespace OsuSM
         {
             var ppq = 48;
             var timings = new List<TimingPoint>();
-            double totalOffset = 0;
+            double totalOffset = 0;//stores the number of ticks up to this event
             OsuParsers.Beatmaps.Objects.TimingPoint last = null;
 
-            /// the offset between the beginning of the song and the start of the note data in seconds.
+            // how much later the evt is than the first event 
             long startOffset = -1;
             foreach (var evt in beatmap.TimingPoints)
             {
@@ -24,6 +24,8 @@ namespace OsuSM
                 if (last == null)
                 {
                     startOffset = evt.Offset;
+
+                    totalOffset = 0;
                 }
                 else
                 {
@@ -39,23 +41,25 @@ namespace OsuSM
                 });
                 last = evt;
             }
+            
             var noteTimes = new SortedSet<long>();
 
             foreach (var hit in beatmap.HitObjects)
             {
-                //find the first timing point which is not less than this point
-                var tpi = timings.LowerBound(x => !(x.SongTime < hit.StartTime));
-                if (tpi == 0)
+                //find the last timing point which is  less than or equal this point
+                var tpi = timings.LowerBound(x => !(x.SongTime <= hit.StartTime))-1;
+                if (tpi < 0)
                 {
+                    tpi = 0;
                     //warn: ignore stuff thats not in time
+                    Console.WriteLine("Warning: delta="+(timings[tpi].SongTime-hit.StartTime));
                     continue;
                 }
-                tpi--;
 
-                var tp = beatmap.TimingPoints[tpi];
+                var tp = timings[tpi];
 
-                double beat = (hit.StartTime - tp.Offset) / tp.BeatLength;
-                long tick = (long)Math.Round(beat * ppq);
+                double beat = (hit.StartTime - tp.SongTime) / tp.Tempo;
+                long tick = (long)Math.Round(beat * ppq) + tp.Time;
                 if (!noteTimes.Contains(tick))
                     noteTimes.Add(tick);
             }
@@ -63,7 +67,7 @@ namespace OsuSM
 
             return new BasicSongInfo
             {
-                AudioOffset = startOffset,
+                AudioOffset = startOffset+77,
                 PPQ = ppq,
                 NoteTimes = noteTimes.ToList(),
                 TimingPoints = timings,

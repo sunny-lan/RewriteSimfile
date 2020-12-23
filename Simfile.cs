@@ -48,14 +48,15 @@ namespace OsuSM
                 sb.Append(Type);
                 sb.AppendLine(":");
 
+
                 sb.Append("    ");
                 sb.Append(Maker);
                 sb.AppendLine(":");
 
-
                 sb.Append("    ");
                 sb.Append(Difficulty);
                 sb.AppendLine(":");
+
 
                 sb.Append("    ");
                 sb.Append(Level);
@@ -66,13 +67,14 @@ namespace OsuSM
                 int idx = 0;
                 long barEnd=0;
                 long barLen = PPQ * 4;
+                long last = validNoteTypes[validNoteTypes.Length - 1];
                 while (idx < Lines.Count)
                 {
                     barEnd +=barLen;
                     int st = idx;
 
                     //max PPQ per division able to fit all lines
-                    long minDivLen= barLen / validNoteTypes[validNoteTypes.Length - 1];
+                    long minDivLen= barLen / validNoteTypes[0];
 
                     while(idx<Lines.Count && Lines[idx].Time<barEnd)
                     {
@@ -81,7 +83,7 @@ namespace OsuSM
                             //PPQ per division
                             long divLen = barLen / noteType;
 
-                            if (Lines[idx].Time % divLen == 0)
+                            if (Lines[idx].Time % divLen == 0 || noteType==last)
                             {
                                 minDivLen = divLen;
                                 break;
@@ -159,6 +161,8 @@ namespace OsuSM
             sb.Append("#MUSIC:");
             sb.Append(Music);
             sb.AppendLine(";");
+
+
 
             sb.Append("#OFFSET:");
             sb.Append(Offset);

@@ -1,0 +1,17 @@
+﻿## Standard //all moves possible without turning
+# Jumps
+
+
+
+# StepL
+
+
+
+# StepR
+
+
+# Impossible //impossible positions when facing front
+//example: cannot face front when left is on R and right is on L
+//this will be applied to all rotations
+RL
+UL
